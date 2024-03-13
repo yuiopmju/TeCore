@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Class-Path: telegram-api.jar httpclient.jar slf4j-api.jar jackson-databind.jar jackson-core.jar jackson-annotations.jar commons-logging.jar commons-lang3.jar
+Main-Class: dev.sfcore.Launcher
