@@ -30,8 +30,19 @@ public class TeKit {
     }
 
     public static <T> Set<Class<? extends T>> getClasses(File file, Class<T> type){
-        Reflections reflections = new Reflections("");
-        return reflections.getSubTypesOf(type);
+
+        for(String key : TeKit.getLoader().getPackages().keySet()){
+            Reflections reflections = new Reflections(TeKit.getLoader().getPackages().get(key));
+            Set<Class<? extends T>> classes = reflections.getSubTypesOf(type);
+
+            if(file.getName().startsWith(key)){
+                if(!classes.isEmpty()){
+                    return classes;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static Logger getLogger(){
@@ -44,5 +55,26 @@ public class TeKit {
 
     protected static void setLoader(PluginsLoader loader){
         TeKit.loader = loader;
+    }
+
+    public static String read(String filePath) {
+        StringBuilder jsonContent = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonContent.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonContent.toString();
+    }
+
+    public static void write(String path, String content) {
+        try (FileWriter writer = new FileWriter(path)) {
+            writer.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

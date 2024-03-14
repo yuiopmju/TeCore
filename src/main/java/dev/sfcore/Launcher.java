@@ -1,19 +1,21 @@
 package dev.sfcore;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import dev.sfcore.utils.PluginsLoader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 public class Launcher {
     public static void main(String[] args) {
+        long l = System.currentTimeMillis();
         File home = TeKit.getDataFolder();
 
-        List<File> folders = List.of(new File(home, "plugins"), new File(home, "libraries"), new File(home, "config"));
+        List<File> folders = List.of(new File(home, "plugins"), new File(home, "libraries"), new File(home, "conf"));
 
-        List<File> files = List.of(new File(home + "/config", "token.txt"), new File(home + "/config", "name.txt"));
+        List<File> files = List.of(new File(home + "/conf", "conf.json"), new File(home + "/plugins", "plugins.json"));
 
         System.out.println("files = " + files);
         System.out.println("folders = " + folders);
@@ -37,17 +39,38 @@ public class Launcher {
             try {
                 System.out.println("Loading " + file.getName() + " files...");
                 file.createNewFile();
+
+                if(file.getName().endsWith(".json")){
+                    TeKit.write(file.getAbsolutePath(), "{\n\n}");
+                }
+
+                if(file.getName().equals("conf.json")){
+                    Gson gson = new Gson();
+                    JsonObject obj = gson.fromJson(TeKit.read(file.getAbsolutePath()), JsonObject.class);
+                    obj.addProperty("token", "tokenHere");
+                    obj.addProperty("bot-name", "botNameHere");
+
+                    String newJson = gson.toJson(obj);
+
+                    TeKit.write(file.getAbsolutePath(), newJson);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        Bot.main(args);
+        Gson gson = new Gson();
+        JsonObject obj = gson.fromJson(TeKit.read(files.get(0).getAbsolutePath()), JsonObject.class);
+
+        Bot.main(new String[]{obj.get("token").getAsString(), obj.get("bot-name").getAsString()});
 
         TeKit.setLoader(new PluginsLoader());
+        TeKit.getLoader().loadPackages();
         TeKit.getLoader().loadPlugins();
         TeKit.getLogger().info("Loaded " + TeKit.getLoader().getPlugins().size() + " plugins.");
         TeKit.getLoader().enablePlugins();
+
+        System.out.println("Done! (" + (System.currentTimeMillis() - l) + "ms);");
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Disabling...");

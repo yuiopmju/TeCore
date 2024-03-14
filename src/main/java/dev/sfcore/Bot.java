@@ -7,6 +7,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class Bot extends TelegramLongPollingBot {
 
     private static String name;
@@ -17,7 +19,17 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if(update.hasMessage()){
-            ResponseHandler.handleResponse(update);
+            for(Class<? extends ResponseHandler> h : TeKit.getLoader().getHandlers()){
+                try {
+                    h.getMethod("handleResponse", Update.class).invoke(null, update);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
