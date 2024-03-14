@@ -3,20 +3,23 @@ package dev.sfcore.responses;
 import dev.sfcore.responses.types.TextResponse;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-public abstract class ResponseHandler {
+public interface ResponseHandler {
 
-    public static void handleResponse(Update update){
+    /*public static void handleResponse(Update update){
         onResponse(update).run();
         if(update.hasMessage() && update.getMessage().hasText()){
             onTextResponse(update).run();
         }
-    }
+    }*/
 
-    public static Response onResponse(Update upd) {
-        return null;
-    }
+    public Response onResponse(Update upd);
 
-    public static Response onTextResponse(Update upd){
-        return null;
+    public Response onTextResponse(Update upd);
+
+    default void handleResponse(Update upd){
+        onResponse(upd).run();
+        if(upd.hasMessage() && upd.getMessage().hasText()){
+            onTextResponse(upd).run();
+        }
     }
 }

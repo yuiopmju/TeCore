@@ -18,19 +18,7 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(update.hasMessage()){
-            for(Class<? extends ResponseHandler> h : TeKit.getLoader().getHandlers()){
-                try {
-                    h.getMethod("handleResponse", Update.class).invoke(null, update);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                } catch (InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+        TeKit.getMainHandler().handleMessage(update);
     }
 
     @Override

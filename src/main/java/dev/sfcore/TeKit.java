@@ -1,5 +1,6 @@
 package dev.sfcore;
 
+import dev.sfcore.responses.MainHandler;
 import dev.sfcore.utils.PluginsLoader;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 public class TeKit {
     private static PluginsLoader loader;
+    private static MainHandler mainHandler;
     public static File getDataFolder(){
         return new File(Bot.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile();
     }
@@ -76,5 +78,13 @@ public class TeKit {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static MainHandler getMainHandler() {
+        return mainHandler;
+    }
+
+    public static void loadMainHandler(){
+        mainHandler = new MainHandler();
     }
 }

@@ -56,6 +56,8 @@ public class PluginsLoader {
                 }
             }
         }
+
+        TeKit.loadMainHandler();
     }
 
     public List<JavaPlugin> getPlugins() {
