@@ -7,6 +7,6 @@ public abstract class JavaPlugin {
     public abstract void onLoad();
     public void disable(){
         isDisabled = true;
-        onDisable();
+        onDisable(); // For what i do boolean?
     }
 }
