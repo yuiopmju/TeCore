@@ -19,6 +19,11 @@ public class PluginsLoader {
     private final List<JavaPlugin> plugins = new ArrayList<>();
     private final List<Class<? extends ResponseHandler>> handlers = new ArrayList<>();
     private final HashMap<String, String> packages = new HashMap<>();
+    private final HashMap<String, String> descriptions = new HashMap<>();
+    private final HashMap<String, String> versions = new HashMap<>();
+    private final HashMap<String, String> names = new HashMap<>();
+    private final HashMap<String, String> dependencies = new HashMap<>();
+    private final HashMap<String, String> fileNames = new HashMap<>();
 
     private void loadJar(File file) {
         try {
@@ -35,6 +40,12 @@ public class PluginsLoader {
 
             if (pluginClass != null) {
                 JavaPlugin pluginInstance = pluginClass.getDeclaredConstructor().newInstance();
+                pluginInstance.setName(names.get(file.getName().substring(0, file.getName().length() - 4))); // For plugin with name for example "FeTuro-1.0.0-SNAPSHOT.jar" you will need type "FeTuro-1.0.0-SNAPSHOT"
+                pluginInstance.setFile(file);
+                pluginInstance.setDescription(descriptions.get(file.getName().substring(0, file.getName().length() - 4)));
+                pluginInstance.setDirectory(new File(file.getParentFile().getAbsolutePath() + "/" + pluginInstance.getName()));
+                pluginInstance.setVersion(versions.get(file.getName().substring(0, file.getName().length() - 4)));
+                pluginInstance.setDependencies(dependencies.get(file.getName().substring(0, file.getName().length() - 4)).split(", "));
                 pluginInstance.onLoad();
                 plugins.add(pluginInstance);
             } else {
@@ -115,13 +126,56 @@ public class PluginsLoader {
 
         for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue().getAsString();
-            System.out.println("Loading plugin " + key + " using package " + value);
-            packages.put(key, value);
+            JsonObject value = entry.getValue().getAsJsonObject();
+            JsonElement name = value.get("name");
+            JsonElement pack = value.get("package");
+            JsonElement description = value.get("description");
+            JsonElement dependencies = value.get("dependencies");
+            JsonElement fileNames = value.get("file");
+            JsonElement version = value.get("version");
+
+            checkAndPut(key, description, descriptions);
+            checkAndPut(key, dependencies, this.dependencies);
+            checkAndPut(key, version, versions);
+
+            if (name == null) {
+                System.out.println("Cannot load " + key + " plugin: Json config does not contains name value");
+                return;
+            } else {
+                names.put(key, name.getAsString());
+            }
+
+            if (pack == null) {
+                System.out.println("Cannot load " + key + " plugin: Json config does not contains package value");
+                return;
+            } else {
+                packages.put(key, pack.getAsString());
+            }
+
+            if (file == null) {
+                System.out.println("Cannot load " + key + " plugin: Json config does not contains file value");
+                return;
+            } else {
+                this.fileNames.put(key, fileNames.getAsString());
+            }
+
+            /*System.out.println("Loading plugin " + name.getAsString() + " using package " + pack.getAsString());
+            System.out.println(descriptions);
+            System.out.println(this.dependencies);
+            System.out.println(versions);
+            System.out.println(names);
+            System.out.println(packages);
+            System.out.println(this.fileNames);*/
         }
     }
 
     public List<Class<? extends ResponseHandler>> getHandlers() {
         return handlers;
+    }
+
+    private void checkAndPut(String key, JsonElement obj, HashMap<String, String> put){
+        if (obj != null) {
+            put.put(key, obj.getAsString());
+        }
     }
 }
