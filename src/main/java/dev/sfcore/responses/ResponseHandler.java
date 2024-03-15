@@ -5,21 +5,16 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 public interface ResponseHandler {
 
-    /*public static void handleResponse(Update update){
-        onResponse(update).run();
-        if(update.hasMessage() && update.getMessage().hasText()){
-            onTextResponse(update).run();
-        }
-    }*/
+    default Response onObjectMappedResponse(Update upd){
+        return null;
+    }
 
-    public Response onResponse(Update upd);
-
-    public Response onTextResponse(Update upd);
+    public void onResponse(Update update);
 
     default void handleResponse(Update upd){
-        onResponse(upd).run();
+        onResponse(upd);
         if(upd.hasMessage() && upd.getMessage().hasText()){
-            onTextResponse(upd).run();
+            onObjectMappedResponse(upd);
         }
     }
 }

@@ -58,6 +58,8 @@ public class PluginsLoader {
         }
 
         TeKit.loadMainHandler();
+
+        TeKit.getMainHandler().load();
     }
 
     public List<JavaPlugin> getPlugins() {
@@ -84,6 +86,10 @@ public class PluginsLoader {
     public Class<? extends ResponseHandler> getResponseHandler(File file){
         Set<Class<? extends ResponseHandler>> set = TeKit.getClasses(file, ResponseHandler.class);
 
+        if(set == null){
+            System.out.println("ResponseListener dont found in " + file.getName());
+            return null;
+        }
         for (Class<? extends ResponseHandler> clazz : set) {
             return clazz;
         }

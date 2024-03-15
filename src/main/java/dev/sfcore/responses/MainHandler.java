@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainHandler {
-    private final List<Class<? extends ResponseHandler>> handlerClasses = new ArrayList<>(TeKit.getLoader().getHandlers());
+    private List<Class<? extends ResponseHandler>> handlerClasses;
 
     public MainHandler(){
     }
@@ -19,14 +19,17 @@ public class MainHandler {
             try {
                 Constructor<? extends ResponseHandler> constructor = handlerClass.getConstructor();
                 ResponseHandler handler = constructor.newInstance();
-                // Вызываем соответствующие методы
                 handler.onResponse(update);
                 if (update.hasMessage() && update.getMessage().hasText()) {
-                    handler.onTextResponse(update);
+                    handler.onObjectMappedResponse(update);
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void load(){
+        handlerClasses = new ArrayList<>(TeKit.getLoader().getHandlers());
     }
 }

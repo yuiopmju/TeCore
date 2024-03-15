@@ -19,6 +19,8 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         TeKit.getMainHandler().handleMessage(update);
+
+        System.out.println("Registered response from " + update.getMessage().getFrom().getUserName());
     }
 
     @Override
