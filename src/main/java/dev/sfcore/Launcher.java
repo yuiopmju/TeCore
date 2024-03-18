@@ -2,11 +2,15 @@ package dev.sfcore;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import dev.sfcore.server.InputThread;
+import dev.sfcore.server.OutputThread;
 import dev.sfcore.utils.PluginsLoader;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Launcher {
     public static void main(String[] args) {
@@ -72,9 +76,33 @@ public class Launcher {
 
         System.out.println("Done! (" + (System.currentTimeMillis() - l) + "ms);");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Disabling...");
-            TeKit.getLoader().disablePlugins();
-        }));
+        InputThread inputThread = new InputThread();
+        inputThread.start();
+
+        BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+
+        OutputThread outputThread = new OutputThread(queue);
+        outputThread.start();
+
+        try {
+            inputThread.join();
+            outputThread.join();
+        } catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(Launcher::shutdown));
+    }
+
+    public static void shutdown(){
+        System.out.println("Disabling...");
+        TeKit.getLoader().disablePlugins();
+
+        try {
+            Thread.sleep(1000);
+            Runtime.getRuntime().exit(0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

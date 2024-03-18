@@ -30,6 +30,6 @@ public class MainHandler {
     }
 
     public void load(){
-        handlerClasses = new ArrayList<>(TeKit.getLoader().getHandlers());
+        handlerClasses = new ArrayList<>(TeKit.getLoader().getResponseHandlers());
     }
 }

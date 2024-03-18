@@ -1,9 +1,10 @@
 package dev.sfcore.responses;
 
+import dev.sfcore.Handler;
 import dev.sfcore.responses.types.TextResponse;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-public interface ResponseHandler {
+public interface ResponseHandler extends Handler {
 
     default Response onObjectMappedResponse(Update upd){
         return null;

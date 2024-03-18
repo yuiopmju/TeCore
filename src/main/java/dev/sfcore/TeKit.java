@@ -13,6 +13,16 @@ import java.util.Set;
 public class TeKit {
     private static PluginsLoader loader;
     private static MainHandler mainHandler;
+    public static final String RESET = "\u001B[0m";
+    public static final String BLACK = "\u001B[30m";
+    public static final String RED = "\u001B[31m";
+    public static final String GREEN = "\u001B[32m";
+    public static final String YELLOW = "\u001B[33m";
+    public static final String BLUE = "\u001B[34m";
+    public static final String PURPLE = "\u001B[35m";
+    public static final String CYAN = "\u001B[36m";
+    public static final String WHITE = "\u001B[37m";
+    private static int id = 0;
     public static File getDataFolder(){
         return new File(Bot.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile();
     }
@@ -34,7 +44,12 @@ public class TeKit {
     public static <T> Set<Class<? extends T>> getClasses(File file, Class<T> type){
 
         for(String key : TeKit.getLoader().getPackages().keySet()){
+            if(!key.equals(file.getName().substring(0, file.getName().length() - 4))){
+                continue;
+            }
             Reflections reflections = new Reflections(TeKit.getLoader().getPackages().get(key));
+            System.out.println(type);
+            System.out.println(file.getAbsolutePath());
             Set<Class<? extends T>> classes = reflections.getSubTypesOf(type);
 
             if(file.getName().startsWith(key)){
@@ -86,5 +101,10 @@ public class TeKit {
 
     public static void loadMainHandler(){
         mainHandler = new MainHandler();
+    }
+
+    public static int getNewId(){
+        id = id + 1;
+        return id;
     }
 }

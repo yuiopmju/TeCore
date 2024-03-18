@@ -2,7 +2,9 @@ package dev.sfcore.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import dev.sfcore.Handler;
 import dev.sfcore.TeKit;
+import dev.sfcore.commands.CommandExecutor;
 import dev.sfcore.responses.ResponseHandler;
 import dev.sfcore.server.JavaPlugin;
 
@@ -17,7 +19,9 @@ import com.google.gson.JsonObject;
 public class PluginsLoader {
 
     private final List<JavaPlugin> plugins = new ArrayList<>();
-    private final List<Class<? extends ResponseHandler>> handlers = new ArrayList<>();
+    private final List<Class<? extends ResponseHandler>> responseHandlers = new ArrayList<>();
+    private final List<Class<? extends CommandExecutor>> commandExecutors = new ArrayList<>();
+    private final Map<Handler, File> handlers = new LinkedHashMap<>();
     private final HashMap<String, String> packages = new HashMap<>();
     private final HashMap<String, String> descriptions = new HashMap<>();
     private final HashMap<String, String> versions = new HashMap<>();
@@ -31,12 +35,12 @@ public class PluginsLoader {
             URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
             Thread.currentThread().setContextClassLoader(classLoader);
 
-            SystemOutLogger.redirectJULToSystemOut(); // Redirect Java's built-in logging
+            SystemOutLogger.redirectJULToSystemOut();
 
             Class<? extends JavaPlugin> pluginClass = getMainClass(file);
             Class<? extends ResponseHandler> handler = getResponseHandler(file);
 
-            handlers.add(handler);
+            responseHandlers.add(handler);
 
             if (pluginClass != null) {
                 JavaPlugin pluginInstance = pluginClass.getDeclaredConstructor().newInstance();
@@ -46,6 +50,9 @@ public class PluginsLoader {
                 pluginInstance.setDirectory(new File(file.getParentFile().getAbsolutePath() + "/" + pluginInstance.getName()));
                 pluginInstance.setVersion(versions.get(file.getName().substring(0, file.getName().length() - 4)));
                 pluginInstance.setDependencies(dependencies.get(file.getName().substring(0, file.getName().length() - 4)).split(", "));
+                if(getCommandExecutors(file) != null){
+                    commandExecutors.addAll(getCommandExecutors(file));
+                }
                 pluginInstance.onLoad();
                 plugins.add(pluginInstance);
             } else {
@@ -83,7 +90,7 @@ public class PluginsLoader {
         }
     }
 
-    public Class<? extends JavaPlugin> getMainClass(File file) {
+    public Class<? extends JavaPlugin> getMainClass(File file){
         Set<Class<? extends JavaPlugin>> set = TeKit.getClasses(file, JavaPlugin.class);
 
         for (Class<? extends JavaPlugin> clazz : set) {
@@ -94,11 +101,28 @@ public class PluginsLoader {
         return null;
     }
 
+    public Collection<Class<? extends CommandExecutor>> getCommandExecutors(File file){
+        Set<Class<? extends CommandExecutor>> set = TeKit.getClasses(file, CommandExecutor.class);
+
+        if(set == null){
+            //System.out.println("ResponseListener dont found in " + file.getName());
+            return null;
+        }
+
+        Collection<Class<? extends CommandExecutor>> rt = new ArrayList<>();
+
+        for (Class<? extends CommandExecutor> clazz : set) {
+            rt.add(clazz);
+        }
+
+        return null;
+    }
+
     public Class<? extends ResponseHandler> getResponseHandler(File file){
         Set<Class<? extends ResponseHandler>> set = TeKit.getClasses(file, ResponseHandler.class);
 
         if(set == null){
-            System.out.println("ResponseListener dont found in " + file.getName());
+            //System.out.println("ResponseListener dont found in " + file.getName());
             return null;
         }
         for (Class<? extends ResponseHandler> clazz : set) {
@@ -169,13 +193,17 @@ public class PluginsLoader {
         }
     }
 
-    public List<Class<? extends ResponseHandler>> getHandlers() {
-        return handlers;
+    public List<Class<? extends ResponseHandler>> getResponseHandlers() {
+        return responseHandlers;
     }
 
     private void checkAndPut(String key, JsonElement obj, HashMap<String, String> put){
         if (obj != null) {
             put.put(key, obj.getAsString());
         }
+    }
+
+    public List<Class<? extends CommandExecutor>> getCommandExecutors() {
+        return commandExecutors;
     }
 }

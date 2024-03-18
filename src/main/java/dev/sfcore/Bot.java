@@ -1,5 +1,7 @@
 package dev.sfcore;
 
+import dev.sfcore.commands.CommandExecutor;
+import dev.sfcore.commands.CommandHandler;
 import dev.sfcore.responses.ResponseHandler;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -18,6 +20,11 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
+        if(update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")){
+            CommandHandler.execute(update.getMessage().getText().replaceFirst("/", ""), update);
+        }
+
         TeKit.getMainHandler().handleMessage(update);
 
         System.out.println("Registered response from " + update.getMessage().getFrom().getUserName());
