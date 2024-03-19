@@ -104,18 +104,16 @@ public class PluginsLoader {
     public Collection<Class<? extends CommandExecutor>> getCommandExecutors(File file){
         Set<Class<? extends CommandExecutor>> set = TeKit.getClasses(file, CommandExecutor.class);
 
+        System.out.println("Searching: " + set);
+
         if(set == null){
             //System.out.println("ResponseListener dont found in " + file.getName());
             return null;
         }
 
-        Collection<Class<? extends CommandExecutor>> rt = new ArrayList<>();
+        Collection<Class<? extends CommandExecutor>> rt = new ArrayList<>(set);
 
-        for (Class<? extends CommandExecutor> clazz : set) {
-            rt.add(clazz);
-        }
-
-        return null;
+        return rt;
     }
 
     public Class<? extends ResponseHandler> getResponseHandler(File file){
