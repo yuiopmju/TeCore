@@ -8,15 +8,20 @@ public class CommandSenderHandler implements CommandSender {
 
     public CommandSenderHandler(Update upd){
         setUpdate(upd);
+        update = upd;
     }
 
     @Override
     public Update getUpdate() {
-        return null;
+        return update;
     }
 
     @Override
     public void setUpdate(Update upd) {
         update = upd;
+    }
+
+    public CommandSender getCommandSender(){
+        return this;
     }
 }

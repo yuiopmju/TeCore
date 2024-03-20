@@ -24,9 +24,9 @@ public abstract class CommandHandler implements Handler {
 
         for(Command c : TeKit.getCommandsLoader().getCommands()){
             if(c.getName().equalsIgnoreCase(cmd)){
-                TeKit.getCommandsLoader().execute(c.getName(), Arrays.copyOfRange(command.split(" "), 1, command.split(" ").length), new CommandSenderHandler(update));
+                TeKit.getCommandsLoader().execute(c.getName(), Arrays.copyOfRange(command.split(" "), 1, command.split(" ").length), new CommandSenderHandler(update).getCommandSender());
                 System.out.println("Executed command for " + new CommandSenderHandler(update).getUser().getUserName() + ": " + command);
-                break;
+                return;
             }
         }
 

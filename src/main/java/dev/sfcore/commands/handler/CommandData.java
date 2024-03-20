@@ -2,6 +2,7 @@ package dev.sfcore.commands.handler;
 
 import dev.sfcore.commands.CommandExecutor;
 
+@Deprecated
 public class CommandData {
     private CommandExecutor executor;
     private boolean async;
