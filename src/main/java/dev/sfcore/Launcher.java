@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dev.sfcore.server.InputThread;
 import dev.sfcore.server.OutputThread;
+import dev.sfcore.utils.CommandsLoader;
 import dev.sfcore.utils.PluginsLoader;
 
 import java.io.File;
@@ -69,6 +70,7 @@ public class Launcher {
         Bot.main(new String[]{obj.get("token").getAsString(), obj.get("bot-name").getAsString()});
 
         TeKit.setLoader(new PluginsLoader());
+        TeKit.setCommandsLoader(new CommandsLoader());
         TeKit.getLoader().loadPackages();
         TeKit.getLoader().loadPlugins();
         TeKit.getLogger().info("Loaded " + TeKit.getLoader().getPlugins().size() + " plugins.");

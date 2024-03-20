@@ -1,6 +1,7 @@
 package dev.sfcore;
 
 import dev.sfcore.responses.MainHandler;
+import dev.sfcore.utils.CommandsLoader;
 import dev.sfcore.utils.PluginsLoader;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 public class TeKit {
     private static PluginsLoader loader;
+    private static CommandsLoader commandsLoader;
     private static MainHandler mainHandler;
     public static final String RESET = "\u001B[0m";
     public static final String BLACK = "\u001B[30m";
@@ -74,6 +76,10 @@ public class TeKit {
         TeKit.loader = loader;
     }
 
+    protected static void setCommandsLoader(CommandsLoader loader){
+        TeKit.commandsLoader = loader;
+    }
+
     public static String read(String filePath) {
         StringBuilder jsonContent = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -106,5 +112,9 @@ public class TeKit {
     public static int getNewId(){
         id = id + 1;
         return id;
+    }
+
+    public static CommandsLoader getCommandsLoader(){
+        return commandsLoader;
     }
 }

@@ -1,10 +1,12 @@
 package dev.sfcore.commands;
 
+import dev.sfcore.Bot;
 import dev.sfcore.Handler;
 import dev.sfcore.Launcher;
 import dev.sfcore.TeKit;
 import dev.sfcore.commands.handler.CommandSender;
 import dev.sfcore.commands.handler.CommandSenderHandler;
+import dev.sfcore.server.commands.Command;
 import dev.sfcore.utils.MessageUtils;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -20,16 +22,11 @@ public abstract class CommandHandler implements Handler {
 
         System.out.println(TeKit.getLoader().getCommandExecutors());
 
-        for(Class<? extends CommandExecutor> clazz : TeKit.getLoader().getCommandExecutors()){
-            try {
-                clazz.getMethod("onCommand", String[].class, CommandSender.class).invoke(null, Arrays.copyOfRange(command.split(" "), 1, command.split(" ").length), new CommandSenderHandler(update));
-                System.out.println("Executed command from " + new CommandSenderHandler(update).getUser().getUserName() + ": " + command);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
+        for(Command c : TeKit.getCommandsLoader().getCommands()){
+            if(c.getName().equalsIgnoreCase(cmd)){
+                TeKit.getCommandsLoader().execute(c.getName(), Arrays.copyOfRange(command.split(" "), 1, command.split(" ").length), new CommandSenderHandler(update));
+                System.out.println("Executed command for " + new CommandSenderHandler(update).getUser().getUserName() + ": " + command);
+                break;
             }
         }
 

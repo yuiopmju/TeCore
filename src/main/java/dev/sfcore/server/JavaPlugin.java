@@ -1,5 +1,7 @@
 package dev.sfcore.server;
 
+import dev.sfcore.server.commands.Command;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,5 +76,9 @@ public abstract class JavaPlugin {
 
     public void setDependencies(String[] dependencies) {
         this.dependencies = dependencies;
+    }
+
+    public Command getCommand(String cmd){
+        return new Command(cmd);
     }
 }
