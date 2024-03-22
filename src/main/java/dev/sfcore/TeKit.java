@@ -3,12 +3,15 @@ package dev.sfcore;
 import dev.sfcore.responses.MainHandler;
 import dev.sfcore.utils.CommandsLoader;
 import dev.sfcore.utils.PluginsLoader;
+import dev.sfcore.utils.SystemOutLogger;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Set;
 
 public class TeKit {
@@ -25,6 +28,7 @@ public class TeKit {
     public static final String CYAN = "\u001B[36m";
     public static final String WHITE = "\u001B[37m";
     private static int id = 0;
+    protected static boolean isDownloading = false;
     public static File getDataFolder(){
         return new File(Bot.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile();
     }
@@ -39,7 +43,10 @@ public class TeKit {
 
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
+                isDownloading = true;
             }
+
+            isDownloading = false;
         }
     }
 
@@ -116,5 +123,45 @@ public class TeKit {
 
     public static CommandsLoader getCommandsLoader(){
         return commandsLoader;
+    }
+
+    public static void loadJar(File file){
+        URL jarUrl = null;
+        try {
+            jarUrl = new URL("file:" + file.getPath());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
+        Thread.currentThread().setContextClassLoader(classLoader);
+
+        SystemOutLogger.redirectJULToSystemOut();
+    }
+
+    public static void loadJars(String[] urls) {
+        for (String url : urls) {
+            try {
+                File tempFile = File.createTempFile("temp", ".jar");
+                tempFile.deleteOnExit();
+
+                URL jarUrl = new URL(url);
+                try (InputStream inputStream = jarUrl.openStream();
+                     OutputStream outputStream = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                }
+
+                URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+                Class<URLClassLoader> sysClass = URLClassLoader.class;
+                java.lang.reflect.Method method = sysClass.getDeclaredMethod("addURL", URL.class);
+                method.setAccessible(true);
+                method.invoke(classLoader, tempFile.toURI().toURL());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
