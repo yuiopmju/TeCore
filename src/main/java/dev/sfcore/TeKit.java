@@ -3,7 +3,6 @@ package dev.sfcore;
 import dev.sfcore.responses.MainHandler;
 import dev.sfcore.utils.CommandsLoader;
 import dev.sfcore.utils.PluginsLoader;
-import dev.sfcore.utils.SystemOutLogger;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,25 +17,18 @@ public class TeKit {
     private static PluginsLoader loader;
     private static CommandsLoader commandsLoader;
     private static MainHandler mainHandler;
-    public static final String RESET = "\u001B[0m";
-    public static final String BLACK = "\u001B[30m";
-    public static final String RED = "\u001B[31m";
-    public static final String GREEN = "\u001B[32m";
-    public static final String YELLOW = "\u001B[33m";
-    public static final String BLUE = "\u001B[34m";
-    public static final String PURPLE = "\u001B[35m";
-    public static final String CYAN = "\u001B[36m";
-    public static final String WHITE = "\u001B[37m";
+    private static final Logger logger = LoggerFactory.getLogger(TeKit.class);
     private static int id = 0;
     protected static boolean isDownloading = false;
-    public static File getDataFolder(){
-        return new File(Bot.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile();
+
+    public static File getDataFolder() {
+        return new File(TeKit.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
     }
 
     public static void downloadFile(String fileUrl, File destination) throws IOException {
         URL url = new URL(fileUrl);
         try (InputStream in = new BufferedInputStream(url.openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(destination.getAbsolutePath())) {
+             FileOutputStream fileOutputStream = new FileOutputStream(destination)) {
 
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
@@ -50,40 +42,30 @@ public class TeKit {
         }
     }
 
-    public static <T> Set<Class<? extends T>> getClasses(File file, Class<T> type){
-
-        for(String key : TeKit.getLoader().getPackages().keySet()){
-            if(!key.equals(file.getName().substring(0, file.getName().length() - 4))){
+    public static <T> Set<Class<? extends T>> getClasses(File file, Class<T> type) {
+        for (String key : TeKit.getLoader().getPackages().keySet()) {
+            if (!key.equals(file.getName().substring(0, file.getName().length() - 4))) {
                 continue;
             }
             Reflections reflections = new Reflections(TeKit.getLoader().getPackages().get(key));
-            System.out.println(type);
-            System.out.println(file.getAbsolutePath());
-            Set<Class<? extends T>> classes = reflections.getSubTypesOf(type);
-
-            if(file.getName().startsWith(key)){
-                if(!classes.isEmpty()){
-                    return classes;
-                }
-            }
+            return reflections.getSubTypesOf(type);
         }
-
         return null;
     }
 
-    public static Logger getLogger(){
-        return LoggerFactory.getLogger("TeKit");
+    public static Logger getLogger() {
+        return logger;
     }
 
     public static PluginsLoader getLoader() {
         return loader;
     }
 
-    protected static void setLoader(PluginsLoader loader){
+    protected static void setLoader(PluginsLoader loader) {
         TeKit.loader = loader;
     }
 
-    protected static void setCommandsLoader(CommandsLoader loader){
+    protected static void setCommandsLoader(CommandsLoader loader) {
         TeKit.commandsLoader = loader;
     }
 
@@ -95,7 +77,7 @@ public class TeKit {
                 jsonContent.append(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error reading file: " + filePath, e);
         }
         return jsonContent.toString();
     }
@@ -104,7 +86,7 @@ public class TeKit {
         try (FileWriter writer = new FileWriter(path)) {
             writer.write(content);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error writing to file: " + path, e);
         }
     }
 
@@ -112,30 +94,26 @@ public class TeKit {
         return mainHandler;
     }
 
-    public static void loadMainHandler(){
+    public static void loadMainHandler() {
         mainHandler = new MainHandler();
     }
 
-    public static int getNewId(){
-        id = id + 1;
-        return id;
+    public static int getNewId() {
+        return ++id;
     }
 
-    public static CommandsLoader getCommandsLoader(){
+    public static CommandsLoader getCommandsLoader() {
         return commandsLoader;
     }
 
-    public static void loadJar(File file){
-        URL jarUrl = null;
+    public static void loadJar(File file) {
         try {
-            jarUrl = new URL("file:" + file.getPath());
+            URL jarUrl = file.toURI().toURL();
+            URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
+            Thread.currentThread().setContextClassLoader(classLoader);
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            logger.error("Error loading JAR file: " + file.getAbsolutePath(), e);
         }
-        URLClassLoader classLoader = new URLClassLoader(new URL[]{jarUrl});
-        Thread.currentThread().setContextClassLoader(classLoader);
-
-        SystemOutLogger.redirectJULToSystemOut();
     }
 
     public static void loadJars(String[] urls) {
@@ -160,7 +138,7 @@ public class TeKit {
                 method.setAccessible(true);
                 method.invoke(classLoader, tempFile.toURI().toURL());
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error loading JAR file from URL: " + url, e);
             }
         }
     }
