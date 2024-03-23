@@ -1,5 +1,7 @@
 package dev.sfcore;
 
+// Maked by airdead.ru
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dev.sfcore.server.InputThread;
