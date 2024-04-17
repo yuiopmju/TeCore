@@ -68,6 +68,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
+    // Test data from phone
     public static Bot getInstance() {
         return instance;
     }
